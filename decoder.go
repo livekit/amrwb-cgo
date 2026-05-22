@@ -3,7 +3,7 @@ package amrwb
 import (
 	"errors"
 
-	amrdec "github.com/dennwc/amrwb-cgo/dec"
+	amrdec "github.com/livekit/amrwb-cgo/dec"
 )
 
 var (
