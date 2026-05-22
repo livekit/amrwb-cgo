@@ -1,6 +1,6 @@
 package amrwb
 
-import amrenc "github.com/dennwc/amrwb-cgo/enc"
+import amrenc "github.com/livekit/amrwb-cgo/enc"
 
 // Mode specifies the bit rate the codec supports.
 type Mode = amrenc.Mode
