@@ -30,9 +30,12 @@ func (d *Decoder) Decode(dst *PCMFrame, src []byte) (int, error) {
 	if len(src) == 0 {
 		return 0, ErrInvalidBlock
 	}
-	n := BlockSize(src)
-	if n <= 0 {
-		return 0, ErrInvalidBlock
+	n := len(src)
+	if n > FrameSizeMax {
+		n = BlockSize(src)
+		if n <= 0 {
+			return 0, ErrInvalidBlock
+		}
 	}
 	copy(d.buf[:], src[:n])
 	d.Decoder.Decode(dst, &d.buf, false)
