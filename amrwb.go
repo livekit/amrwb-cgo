@@ -7,9 +7,49 @@ const (
 	FrameSizeMax = 61           // max encoded AMR-WB block size
 )
 
+// Format represent the variation of the encoding/decoding format for AMR-WB.
+type Format int
+
+const (
+	// Storage format for AMR-WB. See RFC 4867 #5
+	Storage = Format(iota)
+	// RTPBandwidthEfficient is a bandwidth-efficient AMR-WB format for RTP payloads.
+	RTPBandwidthEfficient
+)
+
 type PCMFrame = [PCMFrameSize]int16
 
-var blockSizes = []byte{18, 24, 33, 37, 41, 47, 51, 59, 61, 6, 6, 0, 0, 0, 1, 1}
+var blockSizes = [16]byte{
+	18,
+	24,
+	33,
+	37,
+	41,
+	47,
+	51,
+	59,
+	61,
+	6,
+	6,
+	0,
+	0,
+	0,
+	1,
+	1,
+}
+
+// blockSizesBits is the number of bits for AMR-WB blocks, excluding TOC.
+var blockSizesBits = [16]uint16{
+	132, // 6.60k
+	177, // 8.85k
+	253, // 12.65k
+	285, // 14.25k
+	317, // 15.85k
+	365, // 18.25k
+	397, // 19.85k
+	461, // 23.05k
+	477, // 23.85k
+}
 
 // BlockSize returns size of the first AMR-WB block in file data, as described in RFC 4867 #5.3.
 // This function is not suitable for use in parsing of AMR-WB RTP payload, as it uses a different format.

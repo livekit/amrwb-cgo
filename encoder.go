@@ -22,20 +22,25 @@ const (
 
 // NewEncoder creates a new Encoder.
 // Caller must call Close to avoid resource leak.
-func NewEncoder(mode Mode) *Encoder {
+func NewEncoder(format Format, mode Mode) *Encoder {
 	return &Encoder{
 		Encoder: amrenc.New(mode),
+		format:  format,
 	}
 }
 
 // Encoder for AMR-WB audio codec.
 type Encoder struct {
 	*amrenc.Encoder
-	buf [FrameSizeMax]byte
+	buf    [FrameSizeMax + 1]byte
+	format Format
 }
 
 // Encode PCM16 audio frame and append it to dst.
 func (e *Encoder) Encode(dst []byte, src *PCMFrame) []byte {
-	n := e.Encoder.Encode(&e.buf, src)
+	n := e.Encoder.Encode((*[61]byte)(e.buf[:FrameSizeMax]), src)
+	if e.format == RTPBandwidthEfficient {
+		n = storage2rtp(e.buf[:n])
+	}
 	return append(dst, e.buf[:n]...)
 }
