@@ -12,16 +12,18 @@ var (
 
 // NewDecoder creates a new Decoder.
 // Caller must call Close to avoid resource leak.
-func NewDecoder() *Decoder {
+func NewDecoder(format Format) *Decoder {
 	return &Decoder{
 		Decoder: amrdec.New(),
+		format:  format,
 	}
 }
 
 // Decoder for AMR-WB audio codec.
 type Decoder struct {
 	*amrdec.Decoder
-	buf [FrameSizeMax]byte
+	buf    [FrameSizeMax + 1]byte
+	format Format
 }
 
 // Decode PCM16 audio frame from src and return a number of bytes read.
@@ -38,6 +40,10 @@ func (d *Decoder) Decode(dst *PCMFrame, src []byte) (int, error) {
 		}
 	}
 	copy(d.buf[:], src[:n])
-	d.Decoder.Decode(dst, &d.buf, false)
-	return n, nil
+	read := n
+	if d.format == RTPBandwidthEfficient {
+		n = rtp2storage(d.buf[:n])
+	}
+	d.Decoder.Decode(dst, (*[61]byte)(d.buf[:FrameSizeMax]), false)
+	return read, nil
 }
