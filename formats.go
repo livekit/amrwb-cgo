@@ -14,6 +14,22 @@ package amrwb
 // |  CMR  | |F|  FT   |Q|
 // +-+-+-+-+ +-+-+-+-+-+-+
 
+// Octet-aligned RTP format
+//
+//  0 1 2 3 4 5 6 7   0 1 2 3 4 5 6 7
+// +-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+
+// |  CMR  |R|R|R|R| |F|  FT   |Q|P|P|
+// +-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+
+//
+// Speech data that follows the TOC is octet-aligned in the same way as in storage format.
+// Thus, octet-aligned frame is a storage frame prefixed with the CMR byte.
+
+const (
+	cmrNoRequest = byte(0b1111) // no codec mode request
+	octetCMR     = cmrNoRequest << 4
+	tocFlagF     = byte(1 << 7) // more frames follow in the payload
+)
+
 func storage2rtp(data []byte) int {
 	// The old header is 8 bit, new one is 10 bit (4+6 bit).
 	// We need an extra byte in the destination buffer.

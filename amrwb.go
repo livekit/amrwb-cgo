@@ -13,8 +13,10 @@ type Format int
 const (
 	// Storage format for AMR-WB. See RFC 4867 #5
 	Storage = Format(iota)
-	// RTPBandwidthEfficient is a bandwidth-efficient AMR-WB format for RTP payloads.
+	// RTPBandwidthEfficient is a bandwidth-efficient AMR-WB format for RTP payloads. See RFC 4867 #4.3
 	RTPBandwidthEfficient
+	// RTPOctetAligned is an octet-aligned AMR-WB format for RTP payloads (without interleaving). See RFC 4867 #4.4
+	RTPOctetAligned
 )
 
 type PCMFrame = [PCMFrameSize]int16
