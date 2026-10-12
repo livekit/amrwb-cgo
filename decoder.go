@@ -32,6 +32,16 @@ func (d *Decoder) Decode(dst *PCMFrame, src []byte) (int, error) {
 	if len(src) == 0 {
 		return 0, ErrInvalidBlock
 	}
+	read := 0
+	if d.format == RTPOctetAligned {
+		// Skip CMR byte, the rest of the frame is in the storage format.
+		// Interleaving is not supported, thus there's no ILL/ILP byte.
+		src = src[1:]
+		read = 1
+		if len(src) == 0 {
+			return 0, ErrInvalidBlock
+		}
+	}
 	n := len(src)
 	if n > FrameSizeMax {
 		n = BlockSize(src)
@@ -40,9 +50,14 @@ func (d *Decoder) Decode(dst *PCMFrame, src []byte) (int, error) {
 		}
 	}
 	copy(d.buf[:], src[:n])
-	read := n
-	if d.format == RTPBandwidthEfficient {
+	read += n
+	switch d.format {
+	case RTPBandwidthEfficient:
 		n = rtp2storage(d.buf[:n])
+	case RTPOctetAligned:
+		// Only a single frame per payload is supported, so F bit is ignored.
+		// It occupies the padding bit in the storage format.
+		d.buf[0] &^= tocFlagF
 	}
 	d.Decoder.Decode(dst, (*[61]byte)(d.buf[:FrameSizeMax]), false)
 	return read, nil

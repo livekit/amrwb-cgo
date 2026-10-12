@@ -39,8 +39,13 @@ type Encoder struct {
 // Encode PCM16 audio frame and append it to dst.
 func (e *Encoder) Encode(dst []byte, src *PCMFrame) []byte {
 	n := e.Encoder.Encode((*[61]byte)(e.buf[:FrameSizeMax]), src)
-	if e.format == RTPBandwidthEfficient {
+	switch e.format {
+	case RTPBandwidthEfficient:
 		n = storage2rtp(e.buf[:n])
+	case RTPOctetAligned:
+		// Storage TOC is the same as octet-aligned TOC, but F bit must be 0, since we only send a single frame.
+		e.buf[0] &^= tocFlagF
+		dst = append(dst, octetCMR)
 	}
 	return append(dst, e.buf[:n]...)
 }
